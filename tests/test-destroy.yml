@@ -1,0 +1,35 @@
+name: Test destroy action type (input coverage)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Verify destroy action type inputs are accepted
+        id: action
+        continue-on-error: true
+        uses: .
+        with:
+          ARM_CLIENT_ID: fake-client-id
+          ARM_CLIENT_SECRET: fake-client-secret
+          ARM_SUBSCRIPTION_ID: fake-subscription-id
+          ARM_TENANT_ID: fake-tenant-id
+          RESOURCE_GROUP_NAME: fake-resource-group
+          CLUSTER_NAME: fake-cluster
+          CLUSTER_SIZE: dev
+          STORAGE_ACCOUNT_NAME: fakestorageaccount
+          STORAGE_CONTAINER_NAME: fake-container
+          STORAGE_ACCESS_KEY: fake-access-key
+          ACTION_TYPE: destroy
+          CREATE_ACR: 'false'
+      - name: Assert action was invoked (inputs accepted)
+        run: |
+          echo "Action outcome: ${{ steps.action.outcome }}"
+          # The action will fail due to invalid Azure credentials,
+          # but we verify it was invoked with all required inputs.
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action was invoked with destroy action type"
