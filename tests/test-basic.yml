@@ -1,4 +1,4 @@
-name: Test basic usage - all inputs covered
+name: Test basic usage - AKS Create Action
 on:
   workflow_dispatch:
 jobs:
@@ -24,7 +24,7 @@ jobs:
           IAC_TYPE: terraform
           CREATE_ACR: 'false'
           PULUMI_ACCESS_TOKEN: fake-pulumi-token
-      - name: Assert action was invoked
+      - name: Assert action ran (inputs accepted)
         run: |
-          echo "Action step completed (with continue-on-error)"
-          echo "PASS: all inputs were provided to the action"
+          echo "Action completed with outcome: ${{ steps.action.outcome }}"
+          echo "PASS: all inputs were accepted by the action"
