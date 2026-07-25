@@ -1,4 +1,4 @@
-name: Test basic create scenario
+name: Test cluster size 'test' variant
 on:
   workflow_dispatch:
 jobs:
@@ -17,7 +17,7 @@ jobs:
           git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
             git remote add origin "$GITHUB_WORKSPACE/.git-remote"
 
-      - name: Run action (expect failure at terraform init — no real Azure backend)
+      - name: Run action with CLUSTER_SIZE=test (expect failure at terraform init — no real Azure backend)
         id: action
         uses: .
         continue-on-error: true
@@ -28,22 +28,21 @@ jobs:
           ARM_TENANT_ID: fake-tenant-id
           RESOURCE_GROUP_NAME: test-rg
           CLUSTER_NAME: test-cluster
-          CLUSTER_SIZE: dev
+          CLUSTER_SIZE: test
           STORAGE_ACCOUNT_NAME: fakestorageaccount
           STORAGE_CONTAINER_NAME: fakecontainer
           STORAGE_ACCESS_KEY: fake-access-key
           ACTION_TYPE: create
           CREATE_ACR: 'false'
 
-      - name: Assert action ran (reached terraform init step)
+      - name: Assert action ran with test cluster size
         run: |
           # The action should fail at terraform init (no real Azure backend),
-          # but it must have started and printed the "Running init" banner.
-          # The outcome should be 'failure' (not 'skipped' or missing).
+          # but it must have started and attempted to run.
           OUTCOME="${{ steps.action.outcome }}"
           echo "action outcome: $OUTCOME"
           if [ "$OUTCOME" = "skipped" ]; then
             echo "FAIL: action was skipped — it never ran"
             exit 1
           fi
-          echo "PASS: action ran (outcome=$OUTCOME, expected failure at terraform init without real Azure credentials)"
+          echo "PASS: action ran with CLUSTER_SIZE=test (outcome=$OUTCOME, expected failure at terraform init without real Azure credentials)"

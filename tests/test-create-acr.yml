@@ -1,4 +1,4 @@
-name: Test basic create scenario
+name: Test create with ACR enabled
 on:
   workflow_dispatch:
 jobs:
@@ -17,7 +17,7 @@ jobs:
           git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
             git remote add origin "$GITHUB_WORKSPACE/.git-remote"
 
-      - name: Run action (expect failure at terraform init — no real Azure backend)
+      - name: Run action with CREATE_ACR=true (expect failure at terraform init — no real Azure backend)
         id: action
         uses: .
         continue-on-error: true
@@ -33,17 +33,16 @@ jobs:
           STORAGE_CONTAINER_NAME: fakecontainer
           STORAGE_ACCESS_KEY: fake-access-key
           ACTION_TYPE: create
-          CREATE_ACR: 'false'
+          CREATE_ACR: 'true'
 
-      - name: Assert action ran (reached terraform init step)
+      - name: Assert action ran with CREATE_ACR=true
         run: |
           # The action should fail at terraform init (no real Azure backend),
-          # but it must have started and printed the "Running init" banner.
-          # The outcome should be 'failure' (not 'skipped' or missing).
+          # but it must have started and attempted to run.
           OUTCOME="${{ steps.action.outcome }}"
           echo "action outcome: $OUTCOME"
           if [ "$OUTCOME" = "skipped" ]; then
             echo "FAIL: action was skipped — it never ran"
             exit 1
           fi
-          echo "PASS: action ran (outcome=$OUTCOME, expected failure at terraform init without real Azure credentials)"
+          echo "PASS: action ran with CREATE_ACR=true (outcome=$OUTCOME, expected failure at terraform init without real Azure credentials)"

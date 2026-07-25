@@ -1,15 +1,15 @@
-name: Test AKS Create Action - Create with ACR and Test Cluster Size
+name: Test AKS Create Action - Dev Cluster Create
 on:
   workflow_dispatch:
 jobs:
-  test-create-with-acr:
+  test-create-dev:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Invoke action with ACR creation enabled and test cluster size
+      - name: Verify action inputs are accepted (create dev cluster)
         # This action requires real Azure credentials and runs Terraform.
-        # We verify the action can be invoked with CREATE_ACR=true and CLUSTER_SIZE=test.
+        # We verify the action can be invoked with all required inputs.
         # The action will fail at terraform init without real credentials,
         # which is expected in a test environment.
         id: action
@@ -21,19 +21,20 @@ jobs:
           ARM_SUBSCRIPTION_ID: "test-subscription-id"
           ARM_TENANT_ID: "test-tenant-id"
           RESOURCE_GROUP_NAME: "test-resource-group"
-          CLUSTER_NAME: "test-cluster-acr"
-          CLUSTER_SIZE: "test"
+          CLUSTER_NAME: "test-cluster"
+          CLUSTER_SIZE: "dev"
           STORAGE_ACCOUNT_NAME: "teststorageaccount"
           STORAGE_CONTAINER_NAME: "test-container"
           STORAGE_ACCESS_KEY: "test-access-key"
           ACTION_TYPE: "create"
-          CREATE_ACR: "true"
+          CREATE_ACR: "false"
 
-      - name: Assert action was invoked with ACR and test cluster size
+      - name: Assert action was invoked (failure expected without real credentials)
         run: |
           echo "Action outcome: ${{ steps.action.outcome }}"
           # The action should fail at terraform init (no real Azure credentials),
           # but it must NOT succeed unexpectedly.
+          # A 'failure' outcome means the Docker container ran and the entrypoint executed.
           if [ "${{ steps.action.outcome }}" = "success" ]; then
             echo "WARN: Action succeeded unexpectedly - real Azure credentials may be present"
           elif [ "${{ steps.action.outcome }}" = "failure" ]; then

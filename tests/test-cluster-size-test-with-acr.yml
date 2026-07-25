@@ -1,4 +1,4 @@
-name: Test destroy action type
+name: Test cluster size 'test' with ACR creation
 on:
   workflow_dispatch:
 jobs:
@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Run action with ACTION_TYPE=destroy (expect failure with fake credentials)
+      - name: Run action with test cluster size and ACR (expect failure with fake credentials)
         id: action
         continue-on-error: true
         uses: .
@@ -17,15 +17,15 @@ jobs:
           ARM_SUBSCRIPTION_ID: fake-subscription-id
           ARM_TENANT_ID: fake-tenant-id
           RESOURCE_GROUP_NAME: fake-resource-group
-          CLUSTER_NAME: fake-cluster
-          CLUSTER_SIZE: dev
+          CLUSTER_NAME: fake-cluster-test
+          CLUSTER_SIZE: test
           STORAGE_ACCOUNT_NAME: fakestorageaccount
           STORAGE_CONTAINER_NAME: fake-container
           STORAGE_ACCESS_KEY: fake-access-key
-          ACTION_TYPE: destroy
-          CREATE_ACR: "false"
+          ACTION_TYPE: create
+          CREATE_ACR: "true"
 
-      - name: Assert action ran and failed as expected (destroy path)
+      - name: Assert action ran and failed as expected (test size, ACR=true)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
@@ -34,4 +34,4 @@ jobs:
             echo "FAIL: expected action to fail with fake credentials, got: $OUTCOME"
             exit 1
           fi
-          echo "PASS: destroy action failed as expected with fake credentials"
+          echo "PASS: action with test cluster size and ACR=true failed as expected"
